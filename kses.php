@@ -63,7 +63,7 @@ function kses_version()
 # This function returns kses' version number.
 ###############################################################################
 {
-  return '0.2.2';
+  return '0.3.0';
 } # function kses_version
 
 
@@ -179,7 +179,12 @@ function kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 
 # Remove any "<" or ">" characters
 
-  $attr2 = preg_replace('/[<>]/', '', $attr2);
+  $attr2 =  preg_replace_callback('/[<>]/',
+                                  function ($matches) {
+                                     return '';
+                                  },
+                                  $attr2
+                                 );
 
   return "<$element$attr2$xhtml_slash>";
 } # function kses_attr
@@ -213,7 +218,13 @@ function kses_hair($attr, $allowed_protocols)
         {
           $attrname = $match[1];
           $working = $mode = 1;
-          $attr = preg_replace('/^[-a-zA-Z]+/', '', $attr);
+          $attr =  preg_replace_callback('/^[-a-zA-Z]+/',
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
+
         }
 
         break;
@@ -223,7 +234,13 @@ function kses_hair($attr, $allowed_protocols)
         if (preg_match('/^\s*=\s*/', $attr)) # equals sign
         {
           $working = 1; $mode = 2;
-          $attr = preg_replace('/^\s*=\s*/', '', $attr);
+          $attr =  preg_replace_callback('/^\s*=\s*/',
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
+
           break;
         }
 
@@ -235,7 +252,13 @@ function kses_hair($attr, $allowed_protocols)
                          'value' => '',
                          'whole' => $attrname,
                          'vless' => 'y');
-          $attr = preg_replace('/^\s+/', '', $attr);
+          $attr =  preg_replace_callback('/^\s+/',
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
+
         }
 
         break;
@@ -253,7 +276,12 @@ function kses_hair($attr, $allowed_protocols)
                          'whole' => "$attrname=\"$thisval\"",
                          'vless' => 'n');
           $working = 1; $mode = 0;
-          $attr = preg_replace('/^"[^"]*"(\s+|$)/', '', $attr);
+          $attr =  preg_replace_callback('/^"[^"]*"(\s+|$)/',
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
           break;
         }
 
@@ -268,7 +296,12 @@ function kses_hair($attr, $allowed_protocols)
                          'whole' => "$attrname='$thisval'",
                          'vless' => 'n');
           $working = 1; $mode = 0;
-          $attr = preg_replace("/^'[^']*'(\s+|$)/", '', $attr);
+          $attr =  preg_replace_callback("/^'[^']*'(\s+|$)/",
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
           break;
         }
 
@@ -284,7 +317,13 @@ function kses_hair($attr, $allowed_protocols)
                          'vless' => 'n');
                          # We add quotes to conform to W3C's HTML spec.
           $working = 1; $mode = 0;
-          $attr = preg_replace("%^[^\s\"']+(\s+|$)%", '', $attr);
+          $attr =  preg_replace_callback("%^[^\s\"']+(\s+|$)%",
+                                         function ($matches) {
+                                             return '';
+                                         },
+                                         $attr
+                                        );
+
         }
 
         break;
@@ -385,9 +424,13 @@ function kses_bad_protocol($string, $allowed_protocols)
 ###############################################################################
 {
   $string = kses_no_null($string);
-  $string = preg_replace('/\xad+/', '', $string); # deals with Opera "feature"
+  $string =  preg_replace_callback('/\xad+/',
+                                   function ($matches) {
+                                       return '';
+                                   },
+                                   $string
+                                  );
   $string2 = $string.'a';
-
   while ($string != $string2)
   {
     $string2 = $string;
@@ -403,8 +446,18 @@ function kses_no_null($string)
 # This function removes any NULL characters in $string.
 ###############################################################################
 {
-  $string = preg_replace('/\0+/', '', $string);
-  $string = preg_replace('/(\\\\0)+/', '', $string);
+  $string =  preg_replace_callback('/\0+/',
+                                   function ($matches) {
+                                       return '';
+                                   },
+                                   $string
+                                  );
+  $string =  preg_replace_callback('/(\\\\0)+/',
+                                   function ($matches) {
+                                       return '';
+                                   },
+                                   $string
+                                  );
 
   return $string;
 } # function kses_no_null
@@ -417,7 +470,13 @@ function kses_stripslashes($string)
 # preg_replace(//e) seems to require this.
 ###############################################################################
 {
-  return preg_replace('%\\\\"%', '"', $string);
+  return preg_replace_callback('%\\\\"%',
+                               function ($matches) {
+                                  return '"';
+                               },
+                               $string
+                             );
+
 } # function kses_stripslashes
 
 
@@ -450,7 +509,13 @@ function kses_js_entities($string)
 # Netscape 4.
 ###############################################################################
 {
-  return preg_replace('%&\s*\{[^}]*(\}\s*;?|$)%', '', $string);
+  return preg_replace_callback('%&\s*\{[^}]*(\}\s*;?|$)%',
+                               function ($matches) {
+                                  return '';
+                               },
+                               $string
+                             );
+
 } # function kses_js_entities
 
 
@@ -461,20 +526,30 @@ function kses_html_error($string)
 # quotes and apostrophes as well.
 ###############################################################################
 {
-  return preg_replace('/^("[^"]*("|$)|\'[^\']*(\'|$)|\S)*\s*/', '', $string);
+  return preg_replace_callback('/^("[^"]*("|$)|\'[^\']*(\'|$)|\S)*\s*/',
+                               function ($matches) {
+                                  return '';
+                               },
+                               $string
+                             );
 } # function kses_html_error
 
 
-function kses_bad_protocol_once($string, $allowed_protocols)
+function kses_bad_protocol_once($string, $allowed_protocols =
+               array('http', 'https', 'ftp', 'news', 'nntp', 'telnet',
+                     'gopher', 'mailto'))
 ###############################################################################
 # This function searches for URL protocols at the beginning of $string, while
 # handling whitespace and HTML entities.
 ###############################################################################
 {
-  return preg_replace('/^((&[^;]*;|[\sA-Za-z0-9])*)'.
-                      '(:|&#58;|&#[Xx]3[Aa];)\s*/e',
-                      'kses_bad_protocol_once2("\\1", $allowed_protocols)',
-                      $string);
+  return preg_replace_callback('/^((&[^;]*;|[\sA-Za-z0-9])*)'.
+                               '(:|&#58;|&#[Xx]3[Aa];)\s*/',
+                               function ($matches) use ($allowed_protocols) {
+                                  return kses_bad_protocol_once2($matches[1], $allowed_protocols) ;
+                               },
+                               $string
+                             );
 } # function kses_bad_protocol_once
 
 
@@ -485,9 +560,20 @@ function kses_bad_protocol_once2($string, $allowed_protocols)
 ###############################################################################
 {
   $string2 = kses_decode_entities($string);
-  $string2 = preg_replace('/\s/', '', $string2);
+  $string2 = preg_replace_callback('/\s/',
+                               function ($matches) {
+                                  return '';
+                               },
+                               $string2
+                             );
   $string2 = kses_no_null($string2);
-  $string2 = preg_replace('/\xad+/', '', $string2);
+  $string2 = preg_replace_callback('/\xad+/',
+                               function ($matches) {
+                                  return '';
+                               },
+                               $string2
+                             );
+
    # deals with Opera "feature"
   $string2 = strtolower($string2);
 
@@ -518,12 +604,26 @@ function kses_normalize_entities($string)
 
 # Change back the allowed entities in our entity whitelist
 
-  $string = preg_replace('/&amp;([A-Za-z][A-Za-z0-9]{0,19});/',
-                         '&\\1;', $string);
-  $string = preg_replace('/&amp;#0*([0-9]{1,5});/e',
-                         'kses_normalize_entities2("\\1")', $string);
-  $string = preg_replace('/&amp;#([Xx])0*(([0-9A-Fa-f]{2}){1,2});/',
-                         '&#\\1\\2;', $string);
+  $string = preg_replace_callback('/&amp;([A-Za-z][A-Za-z0-9]{0,19});/',
+                               function ($matches) {
+                                  return '&'.$matches[0];
+                               },
+                               $string
+                             );
+
+  $string = preg_replace_callback('/&amp;#0*([0-9]{1,5});/',
+                               function ($matches) {
+                                  return kses_normalize_entities2($matches[1]);
+                               },
+                               $string
+                             );
+
+  $string = preg_replace_callback('/&amp;#([Xx])0*(([0-9A-Fa-f]{2}){1,2});/',
+                               function ($matches) {
+                                  return ('&#'.$matches[1].$matches[2].';');
+                               },
+                               $string
+                             );
 
   return $string;
 } # function kses_normalize_entities
@@ -546,9 +646,18 @@ function kses_decode_entities($string)
 # URL protocol whitelisting system anyway.
 ###############################################################################
 {
-  $string = preg_replace('/&#([0-9]+);/e', 'chr("\\1")', $string);
-  $string = preg_replace('/&#[Xx]([0-9A-Fa-f]+);/e', 'chr(hexdec("\\1"))',
-                         $string);
+  $string = preg_replace_callback('/&#([0-9]+);/',
+                               function ($matches) {
+                                  return chr($matches[1]);
+                               },
+                               $string
+                             );
+  $string = preg_replace_callback('/&#[Xx]([0-9A-Fa-f]+);/',
+                               function ($matches) {
+                                  return chr(hexdec($matches[1]));
+                               },
+                               $string
+                             );
 
   return $string;
 } # function kses_decode_entities

@@ -73,13 +73,15 @@ function kses_split($string, $allowed_html, $allowed_protocols)
 # matches stray ">" characters.
 ###############################################################################
 {
-  return preg_replace('%(<'.   # EITHER: <
-                      '[^>]*'. # things that aren't >
-                      '(>|$)'. # > or end of string
-                      '|>)%e', # OR: just a >
-                      "kses_split2('\\1', \$allowed_html, ".
-                      '$allowed_protocols)',
-                      $string);
+  return preg_replace_callback('%(<'.   # EITHER: <
+                               '[^>]*'. # things that aren't >
+                               '(>|$)'. # > or end of string
+                               '|>)%', # OR: just a >
+                               function ($matches) use($allowed_html,$allowed_protocols) {
+                                  return kses_split2($matches[0], $allowed_html, $allowed_protocols);
+                               },
+                               $string
+                             );
 } # function kses_split
 
 

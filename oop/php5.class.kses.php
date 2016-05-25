@@ -96,10 +96,10 @@
 	*	+ Integrated code from kses 0.2.2 into class.
 	*	+ Added methods DumpProtocols(), DumpMethods()
 	*
-	*	@author     Richard R. Vásquez, Jr. (Original procedural code by Ulf Härnhammar)
+	*	@author     Richard R. VÃ¡squez, Jr. (Original procedural code by Ulf HÃ¤rnhammar)
 	*	@link       http://sourceforge.net/projects/kses/ Home Page for Kses
 	*	@link       http://chaos.org/contact/ Contact page with current email address for Richard Vasquez
-	*	@copyright  Richard R. Vásquez, Jr. 2005
+	*	@copyright  Richard R. VÃ¡squez, Jr. 2005
 	*	@version    PHP5 OOP 1.0.2
 	*	@license    http://www.gnu.org/licenses/gpl.html GNU Public License
 	*	@package    kses
@@ -152,10 +152,22 @@
 				}
 				$string = $this->removeNulls($string);
 				//	Remove JavaScript entities from early Netscape 4 versions
-				$string = preg_replace('%&\s*\{[^}]*(\}\s*;?|$)%', '', $string);
+				//	The following line modified to avoid using abusable preg_replace
+				$string = preg_replace_callback('%&\s*\{[^}]*(\}\s*;?|$)%', 
+				                                function ($matches){ return '';}, 
+				                                $string
+				                               );
 				$string = $this->normalizeEntities($string);
 				$string = $this->filterKsesTextHook($string);
-				$string = preg_replace('%(<' . '[^>]*' . '(>|$)' . '|>)%e', "\$this->stripTags('\\1')", $string);
+				$string = preg_replace_callback('%(<'.   # EITHER: <
+				                                '[^>]*'. # things that aren't >
+				                                '(>|$)'. # > or end of string
+				                                '|>)%',  # OR: just a >
+				                                function ($matches) {
+				                                	return $this->stripTags($matches[0]);
+				                                },
+				                                $string
+				                              );
 				return $string;
 			}
 
